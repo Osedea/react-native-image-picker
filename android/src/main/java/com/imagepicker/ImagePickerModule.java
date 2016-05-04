@@ -385,10 +385,10 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     }
 
     int CurrentAngle = 0;
+    boolean isVertical = true;
     try {
       ExifInterface exif = new ExifInterface(realPath);
       int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-      boolean isVertical = true;
       switch (orientation) {
         case ExifInterface.ORIENTATION_ROTATE_270:
           isVertical = false;
@@ -418,7 +418,6 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     Bitmap photo = BitmapFactory.decodeFile(realPath, options);
     int initialWidth = options.outWidth;
     int initialHeight = options.outHeight;
-
 
     if(!isVertical){
       photo = rotateImage(photo, CurrentAngle);
