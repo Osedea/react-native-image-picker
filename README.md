@@ -1,3 +1,10 @@
+# Android Fix (own cases at least ....)
+
+The picture were not showing in the right angle, it works and has been tested on a number of devices.
+
+The code need refactoring 'do, maybe more testing.
+
+
 # react-native-image-picker
 A React Native module that allows you to use native UI to select a photo/video from the device library or directly from the camera, like so:
 

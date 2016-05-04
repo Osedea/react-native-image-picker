@@ -242,15 +242,20 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     }
   }
 
-  //http://stackoverflow.com/a/20937610/6080171
-  public static Bitmap rotateImage(Bitmap src, float degree) {
-          // create new matrix
-          Matrix matrix = new Matrix();
-          // setup rotation degree
-          matrix.postRotate(degree);
-          Bitmap bmp = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
-          return bmp;
-  }
+    //http://stackoverflow.com/a/20937610/6080171
+    public static Bitmap rotateImage(Bitmap src, float degree) {
+        try {
+            // create new matrix
+            Matrix matrix = new Matrix();
+            // setup rotation degree
+            matrix.postRotate(degree);
+            Bitmap bmp = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
+            return bmp;
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            return src;
+        }
+    }
 
 
   // NOTE: Currently not reentrant / doesn't support concurrent requests
@@ -385,10 +390,10 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     }
 
     int CurrentAngle = 0;
+    boolean isVertical = true;
     try {
       ExifInterface exif = new ExifInterface(realPath);
       int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-      boolean isVertical = true;
       switch (orientation) {
         case ExifInterface.ORIENTATION_ROTATE_270:
           isVertical = false;
@@ -419,18 +424,6 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     int initialWidth = options.outWidth;
     int initialHeight = options.outHeight;
 
-
-    if(!isVertical){
-      photo = rotateImage(photo, CurrentAngle);
-      // http://stackoverflow.com/a/9224180/6080171
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      photo.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-      byte[] byteArray = byteArrayOutputStream .toByteArray();
-      String encodedPhoto = Base64.encodeToString(byteArray, Base64.DEFAULT);
-      //
-      response.putString("rotatedData", encodedPhoto);
-    }
-
     // don't create a new file if contraint are respected
     if (((initialWidth < maxWidth && maxWidth > 0) || maxWidth == 0)
             && ((initialHeight < maxHeight && maxHeight > 0) || maxHeight == 0)
@@ -445,6 +438,27 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
          realPath = resized.getAbsolutePath();
          uri = Uri.fromFile(resized);
          photo = BitmapFactory.decodeFile(realPath, options);
+            int rotationAngle = 0;
+            if(!isVertical){
+                rotationAngle = 360 - CurrentAngle;
+            } else {
+                rotationAngle = CurrentAngle + 90;
+            }
+                InputStream _inputStream = null;
+                try {
+                  _inputStream = new FileInputStream(realPath);
+                } catch (FileNotFoundException e) {
+                  e.printStackTrace();
+                }
+               Bitmap picture = rotateImage(BitmapFactory.decodeStream(_inputStream), rotationAngle);
+               // http://stackoverflow.com/a/9224180/6080171
+               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+               picture.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+               byte[] byteArray = byteArrayOutputStream .toByteArray();
+               String encodedPhoto = Base64.encodeToString(byteArray, Base64.DEFAULT);
+               //
+               response.putString("data", encodedPhoto);
+
          response.putInt("width", options.outWidth);
          response.putInt("height", options.outHeight);
       }
@@ -453,9 +467,9 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     response.putString("uri", uri.toString());
     response.putString("path", realPath);
 
-    if (!noData) {
-      response.putString("data", getBase64StringFromFile(realPath));
-    }
+    // if (!noData) {
+    //   response.putString("data", getBase64StringFromFile(realPath));
+    // }
 
     putExtraFileInfo(realPath, response);
 
