@@ -438,26 +438,21 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
          realPath = resized.getAbsolutePath();
          uri = Uri.fromFile(resized);
          photo = BitmapFactory.decodeFile(realPath, options);
-            int rotationAngle = 0;
-            if(!isVertical){
-                rotationAngle = 360 - CurrentAngle;
-            } else {
-                rotationAngle = CurrentAngle + 90;
-            }
-                InputStream _inputStream = null;
-                try {
-                  _inputStream = new FileInputStream(realPath);
-                } catch (FileNotFoundException e) {
-                  e.printStackTrace();
-                }
-               Bitmap picture = rotateImage(BitmapFactory.decodeStream(_inputStream), rotationAngle);
-               // http://stackoverflow.com/a/9224180/6080171
-               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-               picture.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-               byte[] byteArray = byteArrayOutputStream .toByteArray();
-               String encodedPhoto = Base64.encodeToString(byteArray, Base64.DEFAULT);
-               //
-               response.putString("data", encodedPhoto);
+
+        InputStream _inputStream = null;
+        try {
+          _inputStream = new FileInputStream(realPath);
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        }
+       Bitmap picture = rotateImage(BitmapFactory.decodeStream(_inputStream), CurrentAngle);
+       // http://stackoverflow.com/a/9224180/6080171
+       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+       picture.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+       byte[] byteArray = byteArrayOutputStream .toByteArray();
+       String encodedPhoto = Base64.encodeToString(byteArray, Base64.DEFAULT);
+       //
+       response.putString("data", encodedPhoto);
 
          response.putInt("width", options.outWidth);
          response.putInt("height", options.outHeight);
