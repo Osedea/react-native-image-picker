@@ -404,6 +404,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
           CurrentAngle = 90;
           break;
         case ExifInterface.ORIENTATION_ROTATE_180:
+          isVertical = false;
           CurrentAngle = 180;
           break;
       }
@@ -439,9 +440,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
          uri = Uri.fromFile(resized);
          photo = BitmapFactory.decodeFile(realPath, options);
             int rotationAngle = 0;
-            if(!isVertical){
-                rotationAngle = CurrentAngle + 90;
-            } else {
+            if(isVertical){
                 rotationAngle = CurrentAngle;
             }
                 InputStream _inputStream = null;
